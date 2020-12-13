@@ -10,7 +10,7 @@
   <arg name="configuration_basename" default="turtlebot3_lds_2d.lua"/> 
   <arg name="slam_methods" default="gmapping" doc="slam type [gmapping, cartographer, hector, karto, frontier_exploration]"/> 
   <arg name="open_rviz" default="true"/> 
-  <arg name="map_file" default="/home/river/map/Project_map.yaml"/><!-- edit this with the location of the map-->
+  <arg name="map_file" default="/home/river/catkin_ws/src/fira_maze/map/Project_map.yaml"/><!-- edit this with the location of the map-->
   <arg name="move_forward_only" default="false"/>
 
   <!-- State publishers for rviz-->
