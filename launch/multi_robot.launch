@@ -1,0 +1,36 @@
+<launch>
+
+  <arg name="configuration_basename" default="turtlebot3_lds_2d.lua"/> 
+  <arg name="slam_methods" default="gmapping" doc="slam type [gmapping, cartographer, hector, karto, frontier_exploration]"/> 
+  <arg name="open_rviz" default="true"/> 
+
+  <!-- State publishers for rviz-->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+
+  <!-- SLAM: Gmapping, Cartographer, Hector, Karto, Frontier_exploration, RTAB-Map -->
+  <include file="$(find turtlebot3_slam)/launch/turtlebot3_$(arg slam_methods).launch"> 
+    <arg name="model" value="turtlebot3_burger.urdf.xacro"/> 
+    <arg name="configuration_basename" value="$(arg configuration_basename)"/> 
+  </include>
+
+  <!-- rviz -->
+  <group if="$(arg open_rviz)">
+    <node pkg="rviz" type="rviz" name="rviz" required="true"
+          args="-d $(find turtlebot3_slam)/rviz/turtlebot3_$(arg slam_methods).rviz"/>
+  </group>
+
+  <node pkg="tf" type="static_transform_publisher" name="camera_tf" args="-1.95 -0.55 2.0 -1.58 0 -1.58 /odom /camera_link 100"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find fira_maze)/worlds/maze_2.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <!-- include our robots -->
+  <include file="$(find fira_maze)/launch/robots.launch"/>
+</launch>

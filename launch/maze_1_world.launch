@@ -1,4 +1,33 @@
 <launch>
+  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="x_pos" default="-2"/>
+  <arg name="y_pos" default="0.145804"/>
+  <arg name="z_pos" default="0.15"/>
+  <arg name="roll" default="0"/>
+  <arg name="pitch" default="0"/>
+  <arg name="yaw" default="0"/>
+
+  <arg name="configuration_basename" default="turtlebot3_lds_2d.lua"/> 
+  <arg name="slam_methods" default="gmapping" doc="slam type [gmapping, cartographer, hector, karto, frontier_exploration]"/> 
+  <arg name="open_rviz" default="true"/> 
+  <arg name="map_file" default="/home/river/map/Project_map.yaml"/><!-- edit this with the location of the map-->
+  <arg name="move_forward_only" default="false"/>
+
+  <!-- State publishers for rviz-->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <!-- SLAM: Gmapping, Cartographer, Hector, Karto, Frontier_exploration, RTAB-Map 
+  <include file="$(find turtlebot3_slam)/launch/turtlebot3_$(arg slam_methods).launch"> 
+    <arg name="model" value="turtlebot3_burger.urdf.xacro"/> 
+    <arg name="configuration_basename" value="$(arg configuration_basename)"/> 
+  </include>-->
+
+  <!-- rviz -->
+  <group if="$(arg open_rviz)">
+    <node pkg="rviz" type="rviz" name="rviz" required="true"
+          args="-d $(find turtlebot3_slam)/rviz/turtlebot3_$(arg slam_methods).rviz"/>
+  </group>
 
   <node pkg="tf" type="static_transform_publisher" name="camera_tf" args="-1.95 -0.55 2.0 -1.58 0 -1.58 /odom /camera_link 100"/>
 
@@ -11,6 +40,20 @@
     <arg name="debug" value="false"/>
   </include>
 
-  <!-- include our robots -->
-  <include file="$(find fira_maze)/launch/robots.launch"/>
+  <param name="robot_description" command="$(find xacro)/xacro.py $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
+
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -model turtlebot3_burger -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw) -param robot_description" />
+
+  <!-- Map server-->
+  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/> 
+
+  <!-- AMCL -->
+  <include file="$(find turtlebot3_navigation)/launch/amcl.launch"/> 
+
+  <!-- move_base -->
+  <include file="$(find turtlebot3_navigation)/launch/move_base.launch">
+    <arg name="model" value="burger"/>
+    <arg name="move_forward_only" value="$(arg move_forward_only)"/>
+  </include>
+
 </launch>
