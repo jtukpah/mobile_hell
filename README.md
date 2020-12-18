@@ -9,13 +9,21 @@ The document will be broken up into 5 sections that will be listed immediately b
 5) Task 4: Creativity task
 
 
-
 SETUP
-In this portion we will go over all the necessary files needed for the operation of the robot.
-Make sure to install the following things
+In this portion we will go over all the necessary files needed for the operation of the robot as well as for the fuctionality of everything else.
+The first thing to do is to install all the necessary things to get the turtlebot up and running. Please copy and paste the following into your terminal.
 
+    sudo apt update
+    sudo apt upgrade
+    sudo apt-get install ros-melodic-turtlebot3-*
+    sudo apt-get install ros-melodic-gmapping
     sudo apt-get install ros-melodic-dwa-local-planner
+    sudo apt-get install ros-noetic-teleop-twist-keyboard
 
+You will also need to git clone a few repos. Here you will need to type the following codes
+
+    git clone https://github.com/arixrobotics/fira_maze
+    git clone https://github.com/naoki-mizuno/ds4_driver
 
 Everytime that you bring up the terminal to run something make sure to type the following command
 
@@ -49,13 +57,45 @@ This will let you open the maze_1_world.launch file, here you must modify lines 
   <arg name="y_pos" default="0.145804"/>
   <arg name="z_pos" default="0.15"/>
 
-Once the position is set, then you can go about generating the map. There are some things that need to be added to the maze_1_world.launch file.
+Once the position is set, then you have to add the necessary code to allow the robot to use slam. Insert the following lines into the same file. 
 
+  <arg name="configuration_basename" default="turtlebot3_lds_2d.lua"/> 
+  <arg name="slam_methods" default="gmapping" doc="slam type [gmapping, cartographer, hector, karto, frontier_exploration]"/> 
+  <arg name="open_rviz" default="true"/> 
 
-when you are about to run the maze, you need to dow
+  <!-- State publishers for rviz-->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
+  <!-- SLAM: Gmapping, Cartographer, Hector, Karto, Frontier_exploration, RTAB-Map-->
+  <include file="$(find turtlebot3_slam)/launch/turtlebot3_$(arg slam_methods).launch"> 
+    <arg name="model" value="turtlebot3_burger.urdf.xacro"/> 
+    <arg name="configuration_basename" value="$(arg configuration_basename)"/> 
+  </include>
 
+  <!-- rviz -->
+  <group if="$(arg open_rviz)">
+    <node pkg="rviz" type="rviz" name="rviz" required="true"
+          args="-d $(find turtlebot3_slam)/rviz/turtlebot3_$(arg slam_methods).rviz"/>
+  </group>
 
+Once this is in the file, you can go and save the file. Then you need to run the following command to bring up the world and the turtlebot.
+
+    roslaunch fira_maze maze_1_world.launch
+
+After you have done that you will need to open a new terminal so that you can change directories. In this new terminal, type the following code
+
+    cd catkin_ws/src/fira_maze/scripts
+
+In this directory, you are going to want to run the maze_explorer.py to get a clear map of of the maze. You will do this by typing the following line in the terminal.
+
+    ./maze_explorer.py
+
+Once you have generated a suitable maze of the enviorment, in a seperate terminal you will need to write the following code.
+
+    rosrun map_server map_saver -f ~/catkin_ws/src/fira_maze/map/maze_map
+
+You will want to modify the name of the file, as well as the file location, as it will be important for the next task.
 
 
 
@@ -257,7 +297,7 @@ Here type the following code to launch the mover.
 
 In the third terminal, run the following command to specify the location on the map you wish the robot to move to.
 
-    rostopic pub /target std_msgs/String '(1.78, -0.274)
+    rostopic pub /target std_msgs/String '(1.94, -0.23)
 
 And watch as the robot, goes to that location waits for five seconds, and then returns home.
 
@@ -377,3 +417,33 @@ to control Robot_Slave use the following command
 
 
 TASK 4
+The objective of this task was left to the team to determine what we will do. In this task we have chosen to display what we have learned in the class, and utilize out knowledge of joystick controls to make it work out. The goal of this task is to link each of the turtlebot models generated in the previous step to a bluetooth ps4 controller, and use those controllers, to have to users, navigate their respective turtlebots out of the maze. The first one to circumvent the course will be the winner. This can be broken down into three steps. 
+First we need to spawn two turtlebots into the enviornment.
+Second we need to link their respective /cmd_vel topics with the respective /joy topics of the two reallife joystick controllers. 
+Third we need to run everything together.
+For the first step, we are already done, we have already been able to spawn two seperate robots in the maze. The next step is to link the joysticks with the turtlebots. To do that you will need to first make sure you have installed the proper git repo, as mentioned in the Set-up portion of this readme.
+After that you will need to create a new launch file. So do that you will need to navigate to the proper launch directory inside of the fira_maze directory. Type the following code.
+
+    cd catkin_ws/src/fira_maze/launch
+
+In this directory you will type the following code
+
+    code joy.launch 
+
+In this new launch file, you will add the following code.
+
+    <?xml version="1.0"?> 
+    <launch> 
+    
+    <group ns="j0"> 
+    <node name="ds4_joystick" pkg="joy" type="joy_node"> 
+    <param name="dev" value="/dev/input/js0" /> 
+    </node> 
+    </group> 
+    
+    <group ns="j1"> 
+    <node name="ds4_joystick" pkg="joy" type="joy_node"> 
+    <param name="dev" value="/dev/input/js1" /> 
+    </node> 
+    </group> 
+    </launch>
