@@ -12,6 +12,11 @@ The document will be broken up into 5 sections that will be listed immediately b
 
 SETUP
 In this portion we will go over all the necessary files needed for the operation of the robot.
+Make sure to install the following things
+
+    sudo apt-get install ros-melodic-dwa-local-planner
+
+
 Everytime that you bring up the terminal to run something make sure to type the following command
 
     export TURTLEBOT3_MODEL=burger
@@ -43,6 +48,13 @@ This will let you open the maze_1_world.launch file, here you must modify lines 
   <arg name="x_pos" default="-2"/>
   <arg name="y_pos" default="0.145804"/>
   <arg name="z_pos" default="0.15"/>
+
+Once the position is set, then you can go about generating the map. There are some things that need to be added to the maze_1_world.launch file.
+
+
+when you are about to run the maze, you need to dow
+
+
 
 
 
