@@ -18,7 +18,6 @@ The first thing to do is to install all the necessary things to get the turtlebo
     sudo apt-get install ros-melodic-turtlebot3-*
     sudo apt-get install ros-melodic-gmapping
     sudo apt-get install ros-melodic-dwa-local-planner
-    sudo apt-get install ros-noetic-teleop-twist-keyboard
 
 You will also need to git clone a few repos. Here you will need to type the following codes
 
@@ -413,6 +412,8 @@ wait for the instilation to finish. Then run the follow command to control Robot
 to control Robot_Slave use the following command
 
     rosrun teleop_twist_keyboard teleop_twist_keyboard.py /cmd_vel:=/robot_slave/cmd_vel
+
+The way the we will make the turtlebots follow each other is that once, the Master robot, finds the slave robot. The Master robot will then return on its path towards its spawn location. Since the slave robot has no capabilities, what we will do is we will have the original robot travel the path to its orign, and then after some time stop and publish its velocity and position to the topic that the second robot is subscribed to. This will let the second robot, follow the path, until the first robot continues.
 
 
 
